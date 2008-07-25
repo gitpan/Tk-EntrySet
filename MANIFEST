@@ -1,0 +1,10 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/choices_set.t
+lib/Tk/EntrySet.pm
+lib/Tk/ChoicesSet.pm
+lib/Tk/MatchingBE.pm
+
+META.yml                                 Module meta-data (added by MakeMaker)
