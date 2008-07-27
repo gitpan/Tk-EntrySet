@@ -73,6 +73,8 @@ SKIP: {
     ### wrap these in TODO because of problems with eventGenerate
     ### and some wm...
   TODO: {
+        local $TODO = 'three tests that depend on eventGenerate might fail';
+                     
         eval{
             $first_entry = $mbe->{_EntrySet}{entries}[0];
             $first_entry->focus;

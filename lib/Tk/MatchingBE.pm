@@ -99,7 +99,7 @@ A callback to be called when the user selects an entry.
 This module was written for Tk::ChoicesSet. There are others that offer more
 flexibility like:
 
-=over4
+=over 4
 
 =item B<JBrowseEntry>
 
