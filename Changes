@@ -5,5 +5,10 @@ Revision history for Perl extension Tk::EntrySet.
 	
 	first version
 
+0.04  Fri Sep 12 09:09:00 2008
 
+        added -changed_command option
+        fixed issue with -valuelist option set at creation time
+        added untie for -valuelist_variable OnDestroy
+        more tests
 

@@ -1,11 +1,11 @@
 --- #YAML:1.0
 name:                Tk-EntrySet
-version:             0.03
+version:             0.04
 abstract:            display/edit a list of values in a Set of Widgets.
 license:             perl
 author:              
     - Ch.Lamprecht <ch.l.ngre@online.de>
-generated_by:        ExtUtils::MakeMaker version 6.44
+generated_by:        ExtUtils::MakeMaker version 6.38
 distribution_type:   module
 requires:     
     Tk:                            804.027

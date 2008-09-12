@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 
-use Test::More qw/tests 15/;
+use Test::More qw/tests 21/;
 
 my $mw;
 BEGIN{use_ok('Tk');
@@ -13,9 +13,10 @@ eval{$mw = MainWindow->new};
 
 SKIP: {
     diag "Could not create MainWindow. Please check, if your X-server is running: $@\n" if ($@);
-    skip "MainWindow instantiation failed: $@", 12 if ($@);
+    skip "MainWindow instantiation failed: $@", 18 if ($@);
     
     my $mbe;
+    $mw->geometry('300x500');
     eval{
         $mbe = $mw->ChoicesSet->pack(-fill   => 'both',
                                      -expand => 1);
@@ -88,7 +89,7 @@ SKIP: {
             $mw->update;
             $val = $first_entry->get_selected_value;
         };
-        ok (! $@, 'Additional MBE tests');    
+        ok (! $@, 'Additional MBE tests');
         is ($val, 'first', 'MBE get_selected_value');
         eval{
             $first_entry->focus;
@@ -105,12 +106,15 @@ SKIP: {
         is ($val, undef, 'No Match: MBE value set to undef');
 
     }                           ###end TODO
+
+    $mbe->destroy;
     
     ### Some tests for Tk::EntrySet ###
 
     my ($es, $list);
+    my $check = 0;
     eval{
-        $es = $mw->EntrySet()->pack;
+        $es = $mw->EntrySet(-changed_command => sub{$check++})->pack;
         $mw->update;
     };
     isa_ok($es, 'Tk::EntrySet', 'Tk::EntrySet instance creation');
@@ -119,6 +123,79 @@ SKIP: {
         $list = $es->valuelist;
         $mw->update;
     };
-    is_deeply($list, [qw/foo bar baz/], 'get/set EntrySet valuelist');;
+    is_deeply($list, [qw/foo bar baz/], 'get/set EntrySet valuelist');
     
+    TODO: {
+          local $TODO = 'test for -changed_command depends on '
+                        .'eventGenerate and might fail';
+          eval{
+              $first_entry = $es->{_EntrySet}{entries}[0];
+              $first_entry->focus;
+              $mw->update;
+              $first_entry->eventGenerate('<Return>');
+              $mw->update;
+          };
+    is($check, 1, 'calling -changed_command Callback');
+    } ### end TODO
+
+    $es->destroy;
+
+### check instantiation with given -valuelist -valuelist_variable options
+
+    eval{
+        $es = $mw->EntrySet(-valuelist => [qw/foo bar baz/])->pack;
+        $mw->update;
+    };
+    is_deeply ($es->valuelist ,[qw/foo bar baz/],
+               'Entryset instantiation with valuelist option set');
+
+    $es->destroy;
+    $valuelist = [];
+    eval{
+        $es = $mw->EntrySet(-valuelist => [qw/foo bar baz/],
+                            -valuelist_variable => \$valuelist,
+                        )->pack;
+        $mw->update;
+    };
+    is_deeply ($valuelist ,[qw/foo bar baz/],
+               'Entryset instantiation with valuelist '
+               .'and valuelist_variable set');
+
+    $es->destroy;
+
+### check for valuelist_variable being untied after $es->destroy...
+    eval{
+        $valuelist = [];
+    };
+    ok( ! $@,
+        "assignment of valuelist_variable after EntrySet->destroy: $@");
+    
+### the same for ChoicesSet
+
+
+    
+    eval{
+        $mbe = $mw->ChoicesSet(-labels_and_values => $lv_set,
+                               -valuelist => [1,2],
+                               )->pack;
+        $mw->update;
+    };
+    is_deeply ($mbe->valuelist ,[1,2],
+               'ChoicesSet instantiation with valuelist option set'); 
+    $mbe->destroy;
+
+
+    $valuelist = [];
+    eval{
+        $mbe = $mw->ChoicesSet(-labels_and_values => $lv_set,
+                               -valuelist => [1,2],
+                               -valuelist_variable => \$valuelist,
+                               )->pack;
+        $mw->update;
+    };
+    is_deeply ($valuelist ,[1,2],
+               'ChoicesSet instantiation with valuelist '
+               .'and valuelist_variable option set'); 
+    $mbe->destroy;
+
 }

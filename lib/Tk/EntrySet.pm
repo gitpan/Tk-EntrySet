@@ -99,6 +99,13 @@ Get/Set the list of values (arrayref).
 Ties a variable (scalarref) to the -valuelist atribute.
 This is a Scalar Tie only.
 
+=item B<-changed_command>
+
+A Callback that is called after the valuelist is updated on user interaction.
+By default -changed_command is triggered if the user hits <Return> in any of
+the Entries.
+(See -callback_installer above if you want to change that.)
+
 
 =back
 
@@ -154,7 +161,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
@@ -193,6 +200,7 @@ sub Populate{
                                                $default_getter],
                        -setter             => ['PASSIVE',undef,undef,
                                                $default_setter],
+                       -changed_command    => ['CALLBACK',undef,undef,undef],
                        -callback_installer => ['PASSIVE',undef,undef,
                                                $default_callback_installer],
                        -empty_is_undef     => ['PASSIVE',undef,undef,1],
@@ -200,8 +208,15 @@ sub Populate{
                        -unique_values      => ['PASSIVE', undef,undef,1],
                        -valuelist_variable => ['METHOD',undef,undef,undef],
                    );
-    $self->afterIdle(sub{$self->valuelist});
+    my $valuelist= exists $args->{-valuelist}?
+        delete $args->{-valuelist}
+            : [];
+
+    $self->OnDestroy(sub{$self->untie_valuelist_variable});
+
+    $self->afterIdle(sub{$self->valuelist($valuelist)});
 }
+
 
 sub new_entry{
     my $self = shift;
@@ -215,13 +230,14 @@ sub new_entry{
         my $installer = $self->cget(-callback_installer);
         $installer->($entry,
                      sub{
-                         $self->afterIdle(sub{$self->valuelist});
+                         $self->afterIdle(
+                             sub{$self->valuelist;
+                                 $self->Callback('-changed_command');
+                             });
                      });
     }
     # add entry to the active entries list
     push @{$self->{_EntrySet}{entries}}, $entry;
- 
-
     return $entry;
 }
 
@@ -334,8 +350,15 @@ sub clear_valuelist{
 sub valuelist_variable{
     my $self = shift;
     my $varref = shift;
+    $self->untie_valuelist_variable;
     tie ($$varref, 'ESTier', $self);
+    $self->{_EntrySet}{valuelist_variable_ref} = $varref;
+}
 
+sub untie_valuelist_variable{
+    my $self = shift;
+    my $oldref = $self->{_EntrySet}{valuelist_variable_ref} || \0;
+    untie ($$oldref);
 }
 
 sub read_entry{
@@ -355,8 +378,8 @@ package ESTier;
 
 sub TIESCALAR{
     my $class = shift;
-    my ( $self) = @_;
-    my $tied = bless { mbe => $self,
+    my ( $w) = @_;
+    my $tied = bless { mbe => $w,
                       }, $class;
     return $tied;
 }
