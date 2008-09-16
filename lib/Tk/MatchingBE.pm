@@ -1,6 +1,8 @@
 package Tk::MatchingBE;
 use strict;
 use warnings;
+use Carp;
+
 
 =head1 NAME
 
@@ -30,12 +32,17 @@ are undef or a single selection - accessible per value or index.
 =head1 METHODS
 
 B<Tk::MatchingBE> supports the following methods:
- 
+
 =over 4
 
 =item B<choices(>[qw/a list of possible choices/]B<)>
 
 Get/Set the choices list (arrayref).
+
+=item B<labels_and_values(>[{label=>'aLabel',value=>'aValue'},{},{}]B<)>
+
+Get/Set the choices list with value/label associations. Labels are displayed
+in the Listbox. Selected value can be accessed with get_selected_value
 
 =item B<get_selected_index>
 
@@ -47,19 +54,33 @@ Set the selected index.
 
 =item B<get_selected_value>
 
-Get the selected value. No setter here, as values need not be unique.
+Get the selected value. Returns the selected 'value' in case -labels_and_values
+has been set. Returns the selected 'label' (Listbox entry) if -choices has
+been set.
+
+=item B<set_selected_value>
+
+Sets the selected 'value' in case -labels_and_values has been set. Croaks otherwise.
 
 =back
 
 =head1 OPTIONS
 
-B<Tk::ChoicesSet> supports the following options:
+B<Tk::MatchingBE> supports the following options:
 
 =over 4
 
 =item B<-choices>
 
-Get set the list of possible choices.
+Get/set the list of possible choices.
+
+=item B<-labels_and_values>
+
+Get/set the choices list with value/label associations (see above).
+
+=item B<-value_variable>
+
+Ties a variable to the widget using 'get/set_selected_value' methods.
 
 =item B<-selectcmd>
 
@@ -124,7 +145,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.05';
 
 require Tk::BrowseEntry;
 our @ISA = 'Tk::BrowseEntry';
@@ -135,20 +156,34 @@ sub Populate{
     my ($self,$args) = @_;
     $self->SUPER::Populate($args);
     $self->{_MatchingBE}{selected_index} = undef;
+    $self->{_MatchingBE}{value_variable_ref} = undef;
+    $self->{_MatchingBE}{values} = undef;
+    $self->{_MatchingBE}{value_to_index} = undef;
+
+    my $lv = exists $args->{-labels_and_values} 
+                         ? delete $args->{-labels_and_values}
+                             : undef;
+    my @config_lv;
+    if (defined $lv){
+        @config_lv = (-labels_and_values => $lv);
+    }
     my $entry = $self->Subwidget('entry');
     my $lb    = $self->Subwidget('slistbox');
     $self->ConfigSpecs(-bg => [$entry,undef,undef,'white'],
                        -selectcmd   => ['CALLBACK',undef,undef,undef],
+                       -labels_and_values => ['METHOD',undef,undef,undef],
+                       -value_variable => ['METHOD',undef,undef,undef],
                    );
 
-    $self->configure(
+    $self->configure(@config_lv,
                      -validate        => 'key',
                      -validatecommand => [$self,'validate'],
+                     
                  );
     $entry->bind('<Return>', [$self,'_key_return']);
     $entry->bind('<Up>', [$lb,'UpDown',-1]);
     $entry->bind('<Down>', [$lb,'UpDown',1]);
-
+    $self->OnDestroy(sub{$self->_untie_value_variable});
 }
 
 sub validate{
@@ -219,7 +254,7 @@ sub set_selected_index{
     # get last valid index of listbox
     # index('end') points to the last + 1 element:
     my $max = $lb->index('end') - 1;
-    die "index out of bounds" if ($index || 0) > $max;
+    croak "index out of bounds" if ($index || 0) > $max;
     $self->{_MatchingBE}{suspend_selectcmd} = 1;
     eval{
         $self->_select_index($index);
@@ -231,13 +266,45 @@ sub set_selected_index{
 
 sub get_selected_value{
     my $self = shift;
+    unless ($self->{_MatchingBE}{value_to_index}){
+        return  $self->get_selected_label;
+    }
+    my $index = $self->{_MatchingBE}{selected_index};
+    return undef unless (defined $index);
+    my $value = $self->{_MatchingBE}{values}[$index];
+    return $value;
+}
+
+sub get_selected_label{
+    my $self = shift;
     my $index = $self->{_MatchingBE}{selected_index};
     # keep listbox from croaking:
     return undef unless (defined $index);
     my $value = $self->Subwidget('slistbox')->get($index);
     return $value;
 }
+sub set_selected_value{
+    my $self = shift;
+    my $value = $_[0];
+    unless ($self->{_MatchingBE}{value_to_index}){
+        croak "no -labels_and_values specified, can't set value in MatchingBE";
+    }
+    my $index = $self->{_MatchingBE}{value_to_index}{$value};
+    unless( defined $index ){
+        croak "can't find index for value [$value],"
+            ."can't set value in MatchingBE";
+    }
+    $self->set_selected_index($index);
+}
 
+sub choices{
+    my $self = shift;
+    my $choices = $_[0];
+    unless ($choices){return $self->SUPER::choices}
+    $self->{_MatchingBE}{value_to_index} = undef;
+    $self->{_MatchingBE}{values} = undef;
+    $self->SUPER::choices($choices);
+}
 
 sub _select_index{
     my $self = shift;
@@ -303,4 +370,91 @@ sub _key_return{
         # should this popup the list??
     }
 }
+
+sub value_variable{
+    my $self = shift;
+    my $varref = $_[0];
+    unless ($varref){return $self->{_MatchingBE}{value_variable_ref}}
+    $self->_untie_value_variable;
+    unless (defined $self->{_MatchingBE}{values}){
+        croak "Can't tie a -value_variable unless -labels_and_values "
+            ."are set.";
+    }
+    $self->{_MatchingBE}{value_variable_ref} = $varref;
+    my $value = $$varref;
+    tie ($$varref, 'MatchingBETier',$self);
+    if (defined $value){
+        $self->set_selected_value($value);
+    }
+}
+
+sub _untie_value_variable{
+    my $self = shift;
+    my $varref = $self->{_MatchingBE}{value_variable_ref} || \0 ;
+    untie $$varref;
+}
+
+sub labels_and_values{
+    my $self = shift;
+    my $l_v = $_[0];
+    #expecting a structure like:
+#      [
+#       {label => 'foo', value => 1},
+#       {label => 'bar', value => 2},
+#       {label => 'baz', value => 3},
+#   ];
+    unless ($l_v){
+        ### called as getter###
+        my @labels = $self->SUPER::choices;
+        my $values_ref = $self->{_MatchingBE}{values}||[];
+        my @r_v;
+        my $i = 0;
+        for my $label(@labels){
+            push @r_v ,{label=>$label, value=>$values_ref->[$i]};
+            $i++;
+        }
+        return \@r_v;
+    }
+    ### called as setter ###
+    my @choices;
+    my $index = 0;
+    ### untie the value_variable first?? ###
+    #$self->_untie_value_variable;
+    my $value_to_index = $self->{_MatchingBE}{value_to_index} = {};
+    my $values = $self->{_MatchingBE}{values} = [];
+    for my $element (@$l_v){
+        if (exists $value_to_index->{$element->{value}}){
+            croak "MatchingBE: -labels_and_values "
+                ."must provide unique values [".$element->{value}."]\n" ;
+        }
+        $value_to_index->{$element->{value}}= $index;
+        push @choices, $element->{label};
+        push @$values, $element->{value};
+        $index++;
+    }
+    $self->SUPER::choices(\@choices);
+}
+
+
+package MatchingBETier;
+
+sub TIESCALAR{
+    my $class = shift;
+    my ( $w) = @_;
+    my $tied = bless { mbe => $w,
+                      }, $class;
+    return $tied;
+}
+
+sub FETCH{
+    my $self = shift; # tied instance
+    return ($self->{mbe})->get_selected_value;
+}
+
+sub STORE{
+    my $self = shift;
+    my $val = shift;
+    ($self->{mbe})->set_selected_value($val);
+}
+
 1;

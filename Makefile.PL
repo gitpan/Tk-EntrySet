@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Tk::EntrySet',
     VERSION_FROM      => 'lib/Tk/EntrySet.pm', # finds $VERSION
-    PREREQ_PM         => {Tk           => 804.027,
+    PREREQ_PM         => {Tk           => '804.027',
                           },
 
    ($ExtUtils::MakeMaker::VERSION >= 6.301 ?

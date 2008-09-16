@@ -3,6 +3,8 @@ Makefile.PL
 MANIFEST
 README
 t/choices_set.t
+t/pod.t
+t/matching_be.t
 lib/Tk/EntrySet.pm
 lib/Tk/ChoicesSet.pm
 lib/Tk/MatchingBE.pm

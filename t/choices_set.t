@@ -16,7 +16,12 @@ SKIP: {
     skip "MainWindow instantiation failed: $@", 18 if ($@);
     
     my $mbe;
-    $mw->geometry('300x500');
+    
+    $mw->geometry($mw->screenwidth
+                  ."x"
+                  .$mw->screenheight
+                  ."+0+0");
+
     eval{
         $mbe = $mw->ChoicesSet->pack(-fill   => 'both',
                                      -expand => 1);
@@ -96,9 +101,8 @@ SKIP: {
             $mw->update;
             $first_entry->icursor(2);
             $mw->update;
+            $first_entry->focus;   
             $first_entry->eventGenerate('<Key-BackSpace>');
-            $first_entry->focus;
-            $mw->update;
             $first_entry->eventGenerate('<Key-Return>');
             $mw->update;
             $val = $first_entry->get_selected_value;
@@ -195,7 +199,7 @@ SKIP: {
     };
     is_deeply ($valuelist ,[1,2],
                'ChoicesSet instantiation with valuelist '
-               .'and valuelist_variable option set'); 
+               .'and valuelist_variable option set');
     $mbe->destroy;
 
 }

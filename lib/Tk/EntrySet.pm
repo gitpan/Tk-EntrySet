@@ -1,6 +1,7 @@
 package Tk::EntrySet;
 use strict;
 use warnings;
+use Carp;
 #use Data::Dumper;
 
 
@@ -161,7 +162,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
@@ -244,7 +245,7 @@ sub new_entry{
 sub remove_entry{
     my $self = shift;
     my $entry = shift;
-    die "entry does not exist" unless Tk::Exists($entry);
+    croak "entry does not exist" unless Tk::Exists($entry);
     # remove from the list of active entries
 
     my $i = 0;
@@ -379,21 +380,21 @@ package ESTier;
 sub TIESCALAR{
     my $class = shift;
     my ( $w) = @_;
-    my $tied = bless { mbe => $w,
+    my $tied = bless { es => $w,
                       }, $class;
     return $tied;
 }
 
 sub FETCH{
     my $self = shift; # tied instance
-    return ($self->{mbe})->cget('-valuelist');
+    return ($self->{es})->cget('-valuelist');
 }
 
 sub STORE{
     my $self = shift;
     my $val = shift;
-    ($self->{mbe})->configure(-valuelist => $val);
-    ($self->{mbe})->cget('-valuelist');
+    ($self->{es})->configure(-valuelist => $val);
+    ($self->{es})->cget('-valuelist');
 }
 
 1;
