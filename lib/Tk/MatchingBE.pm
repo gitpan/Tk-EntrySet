@@ -145,7 +145,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 require Tk::BrowseEntry;
 our @ISA = 'Tk::BrowseEntry';
@@ -289,10 +289,15 @@ sub set_selected_value{
     unless ($self->{_MatchingBE}{value_to_index}){
         croak "no -labels_and_values specified, can't set value in MatchingBE";
     }
-    my $index = $self->{_MatchingBE}{value_to_index}{$value};
-    unless( defined $index ){
-        croak "can't find index for value [$value],"
-            ."can't set value in MatchingBE";
+    my $index;
+    if (! defined $value){
+        $index = undef;
+    }else{
+        $index = $self->{_MatchingBE}{value_to_index}{$value};
+        unless( defined $index ){
+            croak "can't find index for value [$value],"
+                ."can't set value in MatchingBE";
+        }
     }
     $self->set_selected_index($index);
 }
@@ -369,6 +374,7 @@ sub _key_return{
     }else{
         # should this popup the list??
     }
+    Tk->break;
 }
 
 sub value_variable{

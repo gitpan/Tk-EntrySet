@@ -2,7 +2,7 @@ use strict;
 use warnings;
 #use lib './lib';
 
-use Test::More qw/tests 18/;
+use Test::More qw/tests 19/;
 
 my $mw;
 BEGIN{use_ok('Tk');
@@ -13,7 +13,7 @@ eval{$mw = MainWindow->new};
 
 SKIP: {
     diag "Could not create MainWindow. Please check, if your X-server is running: $@\n" if ($@);
-    skip "MainWindow instantiation failed: $@", 15 if ($@);
+    skip "MainWindow instantiation failed: $@", 16 if ($@);
     
     my $mbe;
     
@@ -77,6 +77,9 @@ SKIP: {
 
         eval{$mbe->set_selected_value(42)};
         ok($@ , "can't set_selected_value to non existing value");
+        eval{$mbe->set_selected_value(undef)};
+        $val = $mbe->get_selected_value;
+        is($val, undef, 'can set_selected_value to undef');
     my $val_var;
     $mbe->configure(-value_variable => \$val_var);
     $mbe->set_selected_value(1);

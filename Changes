@@ -12,3 +12,10 @@ Revision history for Perl extension Tk::EntrySet.
         added untie for -valuelist_variable OnDestroy
         more tests
 
+0.05  added various methods to MatchingBE to make it suitable
+      for stand alone usage.
+      more tests
+
+0.06  Sep 16 2008 added test and fixed set_selected_value(undef) 
+      undef is a valid state
+      <Return> pops down the list and does a Tk::break afterwards now.

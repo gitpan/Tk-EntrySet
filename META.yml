@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Tk-EntrySet
-version:             0.05
+version:             0.06
 abstract:            display/edit a list of values in a Set of Widgets.
 license:             perl
 author:              
