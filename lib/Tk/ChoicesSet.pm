@@ -124,6 +124,10 @@ This is a Scalar Tie only.
 
 =back
 
+=head1 Examples
+
+See the examples/ subdirectory.
+
 =head1 AUTHOR
 
 Christoph Lamprecht, ch.l.ngre@online.de
@@ -139,7 +143,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
 require Tk::EntrySet;
 require Tk::MatchingBE;
@@ -158,12 +162,24 @@ sub default_setter{
 sub default_callback_installer{
     return sub{$_[0]->configure(-selectcmd => $_[1])};
 }
-sub Populate{
 
+#sub autoLabel{0}; # keep Frames -label and related options
+
+sub Populate{
     my ($self,$args) = @_;
     $self->{_ChoicesSet}{entry_pool}= [];
     $self->{_ChoicesSet}{entries}= [];
+    
+    # need to hide this from Tk::Frame::Populate...
+    my $l_v = exists $args->{-labels_and_values}
+        ? delete $args->{-labels_and_values}
+            : undef;
+    
     $self->SUPER::Populate($args);
+
+    if (defined $l_v){
+        $args->{-labels_and_values}= $l_v;
+    }
     my $empty = [{value => '',label => ''}];
     $self->ConfigSpecs(
                        -choices            => ['METHOD',undef,undef,undef],

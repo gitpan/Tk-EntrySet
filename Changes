@@ -16,6 +16,14 @@ Revision history for Perl extension Tk::EntrySet.
       for stand alone usage.
       more tests
 
-0.06  Sep 16 2008 added test and fixed set_selected_value(undef) 
+0.06  Sep 16 2008
+      added test and fixed set_selected_value(undef) in MatchingBE
       undef is a valid state
-      <Return> pops down the list and does a Tk::break afterwards now.
+      <Return> pops down the list and does a Tk::break afterwards now
+      (MatchingBE).
+
+0.07  Sep 18 2008
+      examples/*.pl added
+      fixed issue with ChoicesSet -labels_and_values triggering Frames
+      -label.*  option handling
+     
