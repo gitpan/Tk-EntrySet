@@ -27,3 +27,5 @@ Revision history for Perl extension Tk::EntrySet.
       fixed issue with ChoicesSet -labels_and_values triggering Frames
       -label.*  option handling
      
+0.08  Feb 17 2009
+      fixed example in EntrySet.pm

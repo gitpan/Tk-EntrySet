@@ -112,19 +112,25 @@ the Entries.
 
 =head1 Examples
 
+  use strict;
+  use warnings;
+
+  use Tk;
+
+  my $mw = MainWindow->new ;
   require Tk::EntrySet;
 
   my $valuelist = [];
-  my $instance = $main_window->EntrySet()->pack;
-  $instance->configure(-valuelist_variable => \$valuelist);
-  $instance->valuelist([qw/foo bar baz/]);
-  print Dumper $valuelist;
+  my $entryset = $mw->EntrySet()->pack;
+  $entryset->configure(-valuelist_variable => \$valuelist);
+  $entryset->update;
+  $entryset->valuelist([qw/foo bar baz/]);
 
   # use another entryclass:
 
-  my $num_set = $main_window->EntrySet(-entryclass => 'NumEntry')->pack;
+  my $num_set = $mw->EntrySet(-entryclass => 'NumEntry')->pack;
+  $num_set->update;
   $num_set->valuelist([3,15,42]);
-
 
   # use a BrowseEntry  with custom get/set/callback_installer:
 
@@ -143,8 +149,12 @@ the Entries.
                           -callback_installer => $inst,
                         )->pack(-fill => 'both',
                                       -expand => 1);
+  $mbe->update;
   $mbe->valuelist([qw/a c/]);
-  
+
+  MainLoop;
+
+
 
 
 =head1 AUTHOR
@@ -162,7 +172,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
