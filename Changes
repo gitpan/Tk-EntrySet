@@ -29,3 +29,7 @@ Revision history for Perl extension Tk::EntrySet.
      
 0.08  Feb 17 2009
       fixed example in EntrySet.pm
+
+0.09  Feb 18 2009 
+      fixed issue with creation when -valuelist option has not been set
+      forcing -valuelist => [] in an afterIdle call

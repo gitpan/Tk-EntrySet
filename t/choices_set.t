@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 
-use Test::More qw/tests 21/;
+use Test::More qw/tests 22/;
 
 my $mw;
 BEGIN{use_ok('Tk');
@@ -13,7 +13,7 @@ eval{$mw = MainWindow->new};
 
 SKIP: {
     diag "Could not create MainWindow. Please check, if your X-server is running: $@\n" if ($@);
-    skip "MainWindow instantiation failed: $@", 18 if ($@);
+    skip "MainWindow instantiation failed: $@", 19 if ($@);
     
     my $mbe;
     
@@ -202,4 +202,12 @@ SKIP: {
                .'and valuelist_variable option set');
     $mbe->destroy;
 
-}
+    eval{
+        $mbe = $mw->EntrySet()->pack;
+        $mbe->valuelist([1,2,3]);
+        $mw->update;
+        my $entries = $mbe->{_EntrySet}{entries};
+        is (@$entries, 4, 'Should create 4 Entries for 3 values');
+    };
+
+}# END SKIP

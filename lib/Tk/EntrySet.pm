@@ -123,13 +123,11 @@ the Entries.
   my $valuelist = [];
   my $entryset = $mw->EntrySet()->pack;
   $entryset->configure(-valuelist_variable => \$valuelist);
-  $entryset->update;
   $entryset->valuelist([qw/foo bar baz/]);
 
   # use another entryclass:
 
   my $num_set = $mw->EntrySet(-entryclass => 'NumEntry')->pack;
-  $num_set->update;
   $num_set->valuelist([3,15,42]);
 
   # use a BrowseEntry  with custom get/set/callback_installer:
@@ -149,7 +147,6 @@ the Entries.
                           -callback_installer => $inst,
                         )->pack(-fill => 'both',
                                       -expand => 1);
-  $mbe->update;
   $mbe->valuelist([qw/a c/]);
 
   MainLoop;
@@ -172,7 +169,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
@@ -219,13 +216,14 @@ sub Populate{
                        -unique_values      => ['PASSIVE', undef,undef,1],
                        -valuelist_variable => ['METHOD',undef,undef,undef],
                    );
-    my $valuelist= exists $args->{-valuelist}?
-        delete $args->{-valuelist}
-            : [];
-
+    my $valuelist= exists $args->{-valuelist}
+        ? delete $args->{-valuelist}
+            : undef;
+    if( $valuelist ){
+        $self->afterIdle(sub{$self->valuelist($valuelist)});
+    }
     $self->OnDestroy(sub{$self->untie_valuelist_variable});
 
-    $self->afterIdle(sub{$self->valuelist($valuelist)});
 }
 
 
