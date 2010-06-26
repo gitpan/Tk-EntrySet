@@ -145,7 +145,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.10';
 
 require Tk::BrowseEntry;
 our @ISA = 'Tk::BrowseEntry';
@@ -309,6 +309,7 @@ sub choices{
     $self->{_MatchingBE}{value_to_index} = undef;
     $self->{_MatchingBE}{values} = undef;
     $self->SUPER::choices($choices);
+    $self->set_selected_index(undef);
 }
 
 sub _select_index{
@@ -389,9 +390,9 @@ sub value_variable{
     $self->{_MatchingBE}{value_variable_ref} = $varref;
     my $value = $$varref;
     tie ($$varref, 'MatchingBETier',$self);
-    if (defined $value){
+  #  if (defined $value){
         $self->set_selected_value($value);
-    }
+   # }
 }
 
 sub _untie_value_variable{
@@ -439,6 +440,7 @@ sub labels_and_values{
         $index++;
     }
     $self->SUPER::choices(\@choices);
+    $self->set_selected_index( undef );
 }
 
 

@@ -169,7 +169,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
