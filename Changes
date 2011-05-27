@@ -37,3 +37,6 @@ Revision history for Perl extension Tk::EntrySet.
 0.10  Jun 26 2010
       setting -choices or -labels_and_values clears selected value
       configuring -value_variable with an undefined variable clears entry
+
+0.11  May 27 2011
+      pack entry widgets using (-fill x -expand 1)

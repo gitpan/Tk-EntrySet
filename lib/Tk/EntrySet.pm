@@ -145,8 +145,8 @@ the Entries.
                           -getter       => $getter,
                           -setter       => $setter,
                           -callback_installer => $inst,
-                        )->pack(-fill => 'both',
-                                      -expand => 1);
+                        )->pack(-fill   => 'both',
+                                -expand => 1);
   $mbe->valuelist([qw/a c/]);
 
   MainLoop;
@@ -169,7 +169,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 our @ISA = 'Tk::Frame';
 Tk::Widget->Construct('EntrySet');
@@ -296,7 +296,8 @@ sub set_valuelist{
     for my $value (@$valuelist, undef){
         my $new = $self->new_entry;
         $self->write_entry($new,$value);
-        $new->pack;
+        $new->pack( -fill   => 'x',
+                    -expand => 1 );
     }
 }
 
@@ -317,7 +318,8 @@ sub get_valuelist{
        ) ){
             my $new = $self->new_entry;
             $self->write_entry($new,undef);
-            $new->pack;
+            $new->pack( -fill   => 'x',
+                        -expand => 1 );
          #   print "adding a new entry at the bottom: $new\n";
     } else {
         # the last entry is empty - ignore its content
